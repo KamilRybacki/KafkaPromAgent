@@ -20,4 +20,4 @@ jobs:
       - name: Lint all Ansible files
         uses: ansible/ansible-lint@main
         with:
-          args: "--config-file=./.github/configs/ansible-lint.yaml ansible/"
+          args: "--config-file=./.github/configs/ansible-lint.yaml $(find ansible/ -type f -name '*.yml' -o -name '*.yaml')"
