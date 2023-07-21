@@ -1,34 +1,37 @@
 ---
-- name: "add Prometheus Helm Chart repository"
+- name: "Add Prometheus Helm Chart repository"
   kubernetes.core.helm_repository:
     name: "prometheus-community"
-    repo_url: "https://prometheus-community.github.io/helm-charts" 
+    repo_url: "https://prometheus-community.github.io/helm-charts"
   when: "_kpa_prometheus_target_state == 'present'"
 
-- name: "create basic Prometheus config from Jinja template"
+- name: "Create basic Prometheus config from Jinja template"
   ansible.builtin.template:
     src: "config.yml.j2"
     dest: "{{ kpa_stack_values_files_dir }}/{{ _kpa_prometheus_name }}_base.yml"
+    mode: "u=rw,g=rw,o=r"
   when: "_kpa_prometheus_target_state == 'present'"
 
-- name: "create extra Prometheus config from Jinja template"
+- name: "Create extra Prometheus config from Jinja template"
   ansible.builtin.template:
     src: "_extra.config.yml.j2"
     dest: "{{ kpa_stack_values_files_dir }}/{{ _kpa_prometheus_name }}_extra.yml"
+    mode: "u=rw,g=rw,o=r"
+  when: "_kpa_prometheus_target_state == 'present'"
 
-- name: "concatenate extra config YAML with the base config YAML"
+- name: "Concatenate extra config YAML with the base config YAML"
   concat:
     yamls:
       - "{{ kpa_stack_values_files_dir }}/{{ _kpa_prometheus_name }}_base.yml"
       - "{{ kpa_stack_values_files_dir }}/{{ _kpa_prometheus_name }}_extra.yml"
-    dest:  "{{ kpa_stack_values_files_dir }}/{{ _kpa_prometheus_name }}.yml"
+    dest: "{{ kpa_stack_values_files_dir }}/{{ _kpa_prometheus_name }}.yml"
 
-- name: "install Prometheus Operator CRDs Helm Chart"
+- name: "Install Prometheus Operator CRDs Helm Chart"
   kubernetes.core.helm:
     name: "{{ _kpa_prometheus_name }}-crds"
     chart_ref: "prometheus-community/prometheus-operator-crds"
     release_namespace: "{{ kpa_namespace }}"
-    create_namespace: yes
+    create_namespace: true
     chart_version: "{{ _prometheus_crds_chart_version }}"
     kubeconfig: "{{ kpa_kubeconfig_path }}"
     state: "{{ _kpa_prometheus_target_state }}"
@@ -37,7 +40,7 @@
     - "prometheus_operator_enabled"
     - "_prometheus_enable_crds"
 
-- name: "{{ (_kpa_prometheus_target_state == 'present') | ternary('install', 'uninstall') }} Prometheus Helm Chart"
+- name: "Prometheus Helm Chart - {{ (_kpa_prometheus_target_state == 'present') | ternary('Install', 'Uninstall') }}"
   kubernetes.core.helm:
     name: "{{ _kpa_prometheus_name }}"
     chart_ref: "prometheus-community/kube-prometheus-stack"
@@ -49,16 +52,16 @@
     values_files:
       - "{{ kpa_stack_values_files_dir }}/{{ _kpa_prometheus_name }}.yml"
 
-- name: "{{ (_kpa_kafka_target_state == 'present') | ternary('install', 'uninstall') }} Prometheus Kafka Adapter"
+- name: "Prometheus Kafka Adapter - {{ (_kpa_kafka_target_state == 'present') | ternary('Install', 'Uninstall') }}"
   block:
-    - name: clone Prometheus Kafka Adapter Helm Chart repo
+    - name: Clone Prometheus Kafka Adapter Helm Chart repo
       ansible.builtin.git:
         repo: "https://github.com/Telefonica/prometheus-kafka-adapter.git"
         dest: "{{ kpa_stack_values_files_dir }}/prometheus-kafka-adapter"
         version: "{{ _prometheus_kafka_adapter_chart_version }}"
       when: "_kpa_kafka_target_state == 'present'"
- 
-    - name: "{{ (_kpa_kafka_target_state == 'present') | ternary('install', 'uninstall') }} Kafka Adapter Helm Chart"
+
+    - name: "Kafka Adapter Helm Chart - {{ (_kpa_kafka_target_state == 'present') | ternary('Install', 'Uninstall') }}"
       kubernetes.core.helm:
         name: "{{ _kpa_kafka_prometheus_adapter_name }}"
         chart_ref: "{{ kpa_stack_values_files_dir }}/prometheus-kafka-adapter/helm/prometheus-kafka-adapter"
@@ -68,13 +71,13 @@
         values_files:
           - "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_prometheus_adapter_name }}.yml"
 
-- name: "uninstall Prometheus Operator CRDs"
+- name: "Uninstall Prometheus Operator CRDs"
   kubernetes.core.helm:
     name: "{{ _kpa_prometheus_name }}-crds"
     chart_ref: "prometheus-community/prometheus-operator-crds"
     release_namespace: "{{ kpa_namespace }}"
     kubeconfig: "{{ kpa_kubeconfig_path }}"
     state: "{{ _kpa_prometheus_target_state }}"
-  when: 
+  when:
     - "_kpa_prometheus_target_state == 'absent'"
     - "prometheus_operator_enabled"

@@ -1,6 +1,6 @@
 prometheus_image_pull_secrets: []
 
-prometheus_operator_enabled: true 
+prometheus_operator_enabled: true
 prometheus_alertmanager_enabled: false
 prometheus_kube_state_metrics_enabled: false
 prometheus_node_exporter_enabled: false

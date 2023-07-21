@@ -1,8 +1,10 @@
 ---
-- name: "deploy KPA"
+- name: "Deploy KPA"
   hosts: "kpa"
   connection: "local"
   any_errors_fatal: true
   tasks:
-    - ansible.builtin.include_role: { name: "kafka", tasks_from: "apply" }
-    - ansible.builtin.include_role: { name: "prometheus-agent", tasks_from: "apply" }
+    - name: "Include Kafka role"
+      ansible.builtin.include_role: { name: "kafka", tasks_from: "apply" }
+    - name: "Include Prometheus role"
+      ansible.builtin.include_role: { name: "prometheus-agent", tasks_from: "apply" }
