@@ -1,0 +1,7 @@
+kpa_stack_values_files_dir: "/tmp"
+kpa_kubeconfig_path: "{{ lookup('ansible.builtin.env', 'HOME') }}/.kube/config"
+
+kpa_namespace: "kpa"
+kpa_cluster_domain: "cluster.local"
+
+kpa_target_state: "present"

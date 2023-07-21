@@ -1,0 +1,44 @@
+---
+- name: "add Bitnami Helm Chart repository"
+  kubernetes.core.helm_repository:
+    name: "bitnami"
+    repo_url: "https://charts.bitnami.com/bitnami" 
+  when: "_kpa_kafka_target_state == 'present'"
+
+- name: "create base Kafka config from Jinja template"
+  ansible.builtin.template:
+    src: "config.yml.j2"
+    dest: "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_name }}_base.yml"
+  when: "_kpa_kafka_target_state == 'present'"
+
+- name: "create extra Kafka config from Jinja template"
+  ansible.builtin.template:
+    src: "_extra.config.yml.j2"
+    dest: "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_name }}_extra.yml"
+  when: "_kpa_kafka_target_state == 'present'"
+
+- name: "concatenate extra config YAML with the base config YAML"
+  concat:
+    yamls:
+      - "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_name }}_base.yml"
+      - "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_name }}_extra.yml"
+    dest:  "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_name }}.yml"
+
+- name: "{{ (_kpa_kafka_target_state == 'present') | ternary('install', 'uninstall') }} Kafka Helm Chart"
+  kubernetes.core.helm:
+    name: "{{ _kpa_kafka_name }}"
+    chart_ref: "bitnami/kafka"
+    release_namespace: "{{ kpa_namespace }}"
+    create_namespace: yes
+    chart_version: "{{ _kafka_stack_chart_version }}"
+    kubeconfig: "{{ kpa_kubeconfig_path }}"
+    state: "{{ _kpa_kafka_target_state }}"
+    force: true
+    values_files:
+      - "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_name }}.yml"
+
+- name: "create Kafka Prometheus Adapter config from template"
+  ansible.builtin.template:
+    src: "_prometheus_adapter.config.yml.j2"
+    dest: "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_prometheus_adapter_name }}.yml"
+  when: "_kpa_prometheus_target_state == 'present'"

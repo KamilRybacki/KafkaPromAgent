@@ -1,0 +1,45 @@
+name: Code linting using diff-cache and linters
+run-name: Code linting
+on: [push]
+concurrency:
+  group: ${{ github.ref }}-linting
+  cancel-in-progress: true
+
+jobs:
+  check-changed-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Get changed Markdown files
+        id: changed_files_md
+        uses: KamilRybacki/diff-cache@v1
+        with:
+          cache_secret: ${{ secrets.DIFF_CACHE }}
+          token: ${{ secrets.CI_TOKEN }}
+          include: '.md'
+      - name: Get changed Ansible files
+        id: changed_files_ansible
+        uses: KamilRybacki/diff-cache@v1
+        with:
+          cache_secret: ${{ secrets.DIFF_CACHE }}
+          token: ${{ secrets.CI_TOKEN }}
+          include: '.yml'
+      - name: Show changed files
+        run: |
+          echo "Changed Markdown files: ${{ steps.changed_files_md.outputs.files }}"
+          echo "Changed Ansible files: ${{ steps.changed_files_ansible.outputs.files }}"
+      - name: Lint changed Markdown files
+        if: steps.changed_files_md.outputs.files != ''
+        uses: docker://avtodev/markdown-lint:v1
+        with:
+          args: "${{ steps.changed_files_md.outputs.files }}"
+      - name: Lint changed Ansible files
+        if: steps.changed_files_ansible.outputs.files != ''
+        uses: ansible/ansible-lint@main
+        with:
+          args: "--config-file=./.github/configs/ansible-lint.yaml ${{ steps.changed_files_ansible.outputs.files }}"
