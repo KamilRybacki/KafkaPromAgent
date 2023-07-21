@@ -209,7 +209,8 @@ Paths for Prometheus ingress (default: `{}`)
 #### Further Prometheus customization
 
 Similar to the Kafka configuration, the Prometheus configuration
-can be further customized by passing additional values to the `prometheus_extra_values` variable. Please refer to the
+can be further customized by passing additional values
+to the `prometheus_extra_values` variable. Please refer to the
 [Values file present in the Prometheus Helm chart repository]
 to check all available options for them (and for their defaults).
 
