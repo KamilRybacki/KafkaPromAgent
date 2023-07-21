@@ -9,14 +9,14 @@
   ansible.builtin.template:
     src: "config.yml.j2"
     dest: "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_name }}_base.yml"
-    mode: "u=rw,g=rw,o=r" 
+    mode: "u=rw,g=rw,o=r"
   when: "_kpa_kafka_target_state == 'present'"
 
 - name: "Create extra Kafka config from Jinja template"
   ansible.builtin.template:
     src: "_extra.config.yml.j2"
     dest: "{{ kpa_stack_values_files_dir }}/{{ _kpa_kafka_name }}_extra.yml"
-    mode: "u=rw,g=rw,o=r" 
+    mode: "u=rw,g=rw,o=r"
   when: "_kpa_kafka_target_state == 'present'"
 
 - name: "Concatenate extra config YAML with the base config YAML"
