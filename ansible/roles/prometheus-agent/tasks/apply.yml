@@ -61,7 +61,7 @@
         version: "{{ _prometheus_kafka_adapter_chart_version }}"
       when: "_kpa_kafka_target_state == 'present'"
 
-    - name: "{{ (_kpa_kafka_target_state == 'present') | ternary('Install', 'Uninstall') }} Kafka Adapter Helm Chart"
+    - name: "Kafka Adapter Helm Chart - {{ (_kpa_kafka_target_state == 'present') | ternary('Install', 'Uninstall') }}"
       kubernetes.core.helm:
         name: "{{ _kpa_kafka_prometheus_adapter_name }}"
         chart_ref: "{{ kpa_stack_values_files_dir }}/prometheus-kafka-adapter/helm/prometheus-kafka-adapter"
