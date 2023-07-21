@@ -1,1 +1,2 @@
-- src: kubernetes.core
+collections:
+  - kubernetes.core
