@@ -1,0 +1,11 @@
+_prometheus_stack_chart_version: "48.1.1"
+_prometheus_crds_chart_version: "5.0.0"
+_prometheus_kafka_adapter_chart_version: "1.8.0"
+
+_prometheus_enable_crds: true
+_prometheus_server_agent_mode: true
+
+_prometheus_ingress_controller: "nginx"
+_prometheus_ingress_annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: true

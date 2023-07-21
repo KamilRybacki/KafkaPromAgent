@@ -1,0 +1,41 @@
+replicaCount: {{ kafka_replicas }}
+fullNameOverride: "{{ _kpa_kafka_name }}"
+containerPorts:
+  client: {{ kafka_client_port }}
+  controller: {{ kafka_controller_port }}
+  internal: {{ kafka_internal_port }}
+  external: {{ kafka_external_port }}
+resources:
+  limits:
+    cpu: "{{ kafka_cpu_limit }}"
+    memory: "{{ kafka_memory_limit }}"
+  requests:
+    cpu: "{{ kafka_cpu_request }}"
+    memory: "{{ kafka_memory_request }}"
+service:
+  ports:
+    client: {{ kafka_client_port }}
+    controller: {{ kafka_controller_port }}
+    internal: {{ kafka_internal_port }}
+    external: {{ kafka_external_port }}
+logRetentionHours: "{{ kafka_log_retention_time_in_hours }}"
+logRetentionBytes: "{{ kafka_log_retention_bytes }}"
+persistence:
+  size: "{{ kafka_persistence_size }}"
+  storageClass: "{{ kafka_persistence_storage_class }}"
+  accessModes:
+    - "{{ kafka_persistence_access_mode }}"
+
+{% if kafka_extra_env_vars_mode == 'list' %}
+{% if kafka_extra_env_vars | length > 0 %}
+extraEnvVars:
+  {% for env_var in kafka_extra_env_vars %}
+  - name: "{{ env_var.name }}"
+    value: "{{ env_var.value }}"
+  {% endfor %}
+{% endif %}
+{% elif kafka_extra_env_vars_mode == 'configmap' %}
+extraEnvVarsCM: "{{ kafka_extra_env_vars }}"
+{% elif kafka_extra_env_vars_mode == 'secret' %}
+extraEnvVarsSecret: "{{ kafka_extra_env_vars }}"
+{% endif %}

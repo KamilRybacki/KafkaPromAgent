@@ -1,0 +1,11 @@
+_kpa_prometheus_name: "{{ kpa_namespace }}-prometheus-agent"
+_kpa_kafka_name: "{{ kpa_namespace }}-kafka"
+
+_kpa_kafka_prometheus_adapter_port: 8080
+_kpa_kafka_prometheus_adapter_name: "{{ _kpa_kafka_name }}-{{ _kpa_prometheus_name }}-adapter"
+_kpa_kafka_prometheus_adapter_url: "http://{{ _kpa_kafka_prometheus_adapter_name }}:{{ _kpa_kafka_prometheus_adapter_port }}/receive"
+_kpa_kafka_prometheus_adapter_topic: "kpa"
+
+_kpa_kafka_target_state: "{{ kpa_target_state }}"
+_kpa_prometheus_target_state: "{{ kpa_target_state }}"
+_kpa_client_target_state: "{{ kpa_target_state }}"

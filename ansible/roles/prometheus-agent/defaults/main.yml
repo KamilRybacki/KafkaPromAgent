@@ -1,0 +1,43 @@
+prometheus_image_pull_secrets: []
+
+prometheus_operator_enabled: true 
+prometheus_alertmanager_enabled: false
+prometheus_kube_state_metrics_enabled: false
+prometheus_node_exporter_enabled: false
+
+prometheus_server_replicas: 1
+prometheus_server_memory_request: "128Mi"
+prometheus_server_memory_limit: "2048Mi"
+prometheus_server_cpu_request: "100m"
+prometheus_server_cpu_limit: "500m"
+prometheus_server_scrape_interval: "15s"
+prometheus_server_scrape_timeout: "5s"
+prometheus_server_remote_write_name: ""
+prometheus_server_remote_write_url: ""
+
+prometheus_server_federation_targets: []
+
+prometheus_server_service_account_annotations: {}
+prometheus_server_extra_args: {}
+
+prometheus_configmap_reloader_memory_request: "10Mi"
+prometheus_configmap_reloader_memory_limit: "50Mi"
+prometheus_configmap_reloader_cpu_request: "10m"
+prometheus_configmap_reloader_cpu_limit: "100m"
+
+prometheus_dns_nameservers: []
+prometheus_dns_options: []
+prometheus_dns_searches: []
+
+prometheus_service_port: 9090
+
+prometheus_service_annotations: {}
+prometheus_service_labels: {}
+
+prometheus_ingress_enabled: false
+prometheus_ingress_labels: {}
+prometheus_ingress_hosts: []
+prometheus_ingress_tls_secrets: []
+prometheus_ingress_paths: {}
+
+prometheus_extra_values: {}

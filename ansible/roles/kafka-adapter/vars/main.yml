@@ -1,0 +1,6 @@
+_kafka_stack_chart_version: "23.0.5"
+
+_kafka_prometheus_adapter_replicas: "1"
+_kafka_prometheus_adapter_image_repo: "telefonica/prometheus-kafka-adapter"
+_kafka_prometheus_adapter_image_tag: "1.8.0"
+_kafka_prometheus_adapter_image_pull_policy: "IfNotPresent"

@@ -1,0 +1,22 @@
+kafka_replicas: 1
+
+kafka_client_port: 9092
+kafka_controller_port: 9093
+kafka_internal_port: 9094
+kafka_external_port: 9095
+
+kafka_cpu_request: "100m"
+kafka_cpu_limit: "500m"
+kafka_memory_request: "128Mi"
+kafka_memory_limit: "2048Mi"
+
+kafka_log_retention_time_in_hours: "168"
+kafka_log_retention_bytes: "_1073741824"
+kafka_persistence_size: "8Gi"
+kafka_persistence_storage_class: ""
+kafka_persistence_access_mode: "ReadWriteOnce"
+
+kafka_extra_env_vars_mode: 'list'
+kafka_extra_env_vars: []
+
+kafka_extra_values: {}

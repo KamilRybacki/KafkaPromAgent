@@ -1,0 +1,18 @@
+fullNameOverride: "{{ _kpa_kafka_prometheus_adapter_name }}" 
+replicaCount: {{ _kafka_prometheus_adapter_replicas }}
+image:
+  repository: "{{ _kafka_prometheus_adapter_image_repo }}"
+  tag: "{{ _kafka_prometheus_adapter_image_tag }}"
+  pullPolicy: "{{ _kafka_prometheus_adapter_image_pull_policy }}"
+environment:
+  KAFKA_BROKER_LIST: "{{ _kpa_kafka_name }}:{{ kafka_client_port }}"
+  KAFKA_TOPIC: "{{ _kpa_kafka_prometheus_adapter_topic }}"
+  PORT: {{ _kpa_kafka_prometheus_adapter_port }}
+pod:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "{{ _kpa_kafka_prometheus_adapter_port }}"
+service:
+  name: "{{ _kpa_kafka_prometheus_adapter_name }}"
+  type: "NodePort"
+  port: {{ _kpa_kafka_prometheus_adapter_port }}

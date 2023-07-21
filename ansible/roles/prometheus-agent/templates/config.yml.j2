@@ -1,0 +1,218 @@
+namespaceOverride: "{{ kpa_namespace }}"
+fullNameOverride: "{{ _kpa_prometheus_name }}"
+defaultRules:
+  rules:
+    alertmanager: "{{ prometheus_alertmanager_enabled }}"
+    kubeStateMetrics: "{{ prometheus_kube_state_metrics_enabled }}"
+    nodeExporter: "{{ prometheus_node_exporter_enabled }}"
+    prometheusOperator: "{{ prometheus_operator_enabled }}"
+
+{%- if prometheus_image_pull_secrets | length > 0 %}
+global:
+  imagePullSecrets:
+    - name: "{{ prometheus_image_pull_secrets }}"
+{%- endif %}
+
+prometheus:
+  agentMode: {{ _prometheus_server_agent_mode }}
+  serviceAccount:
+    create: true
+    name: "{{ _kpa_prometheus_name }}-agent-service-account"
+    {%- if prometheus_server_service_account_annotations %}
+    annotations: 
+    {%- for key, value in prometheus_server_service_account_annotations.items() %}
+      {{ key }}: "{{ value }}"
+    {%- endfor %}
+    {%- endif %}
+
+  prometheusSpec:
+    resources:
+      limits:
+        cpu: "{{ prometheus_server_cpu_limit }}"
+        memory: "{{ prometheus_server_memory_limit }}"
+      requests:
+        cpu: "{{ prometheus_server_cpu_request }}"
+        memory: "{{ prometheus_server_memory_request }}"
+
+    scrapeInterval: "{{ prometheus_server_scrape_interval }}"
+    scrapeTimeout: "{{ prometheus_server_scrape_timeout }}"
+
+    {%- if prometheus_server_extra_args | bool %}
+    additionalArgs:
+    {%- for key, value in promeheus_server_extra_args.items() %}
+      {{ key }}: "{{ value }}"
+    {%- endfor %}
+    {%- endif %}
+
+    replicas: {{ prometheus_server_replicas }}
+    remoteWrite:
+
+      {% if _kpa_kafka_target_state == 'present' %}
+
+      - name: "{{ _kpa_kafka_prometheus_adapter_name }}"
+        url: "{{ _kpa_kafka_prometheus_adapter_url }}"
+
+      {% endif %}
+
+      {% if _kpa_kafka_target_state == 'absent' %}
+
+      - name: "{{ prometheus_server_remote_write_name }}"
+        url: "{{ prometheus_server_remote_write_url }}"
+
+      {% endif %}
+
+    additionalScrapeConfigs:
+    - job_name: "selfscrape"
+      scrape_interval: 15s
+      scrape_timeout: 5s
+      metrics_path: /metrics
+      scheme: http
+      static_configs:
+        - targets:
+          - "localhost:{{ prometheus_service_port }}"
+
+    {%- if prometheus_server_federation_targets | length > 0 %}
+    {%- for federation_target in prometheus_server_federation_targets %}
+    - job_name: "{{ federation_target.jobName }}"
+      scrape_interval: {{ target.scrapeInterval }}
+      honor_labels: true
+      metrics_path: "{{ federation_target.metricsPath }}"
+      params:
+        'match[]':
+          - '{% raw %}{{% endraw %}job="{{ federation_target.jobMatchRegex }}"{% raw %}}{% endraw %}'
+      static_configs:
+        - targets:
+          {% for address in federation_target.addresses %}
+            - "{{ address }}"
+          {% endfor %}
+
+      {%- if federation_target.extraSettings | bool %}
+      {%- for param in deferation_target.extraSettings.items() %}
+        {{ param.name }}: "{{ param.value }}"
+      {%- endfor %}
+      {%- endif %}
+
+      {%- if deferation_target.relabelConfigs | bool %}
+      metric_relabel_configs:
+      {%- for relabelConfig in deferation_target.relabelConfigs %}
+        - source_labels: [{{ relabelConfig.sourceLabels }}]
+          regex: "{{ relabelConfig.regex }}"
+          action: "{{ relabelConfig.action }}"
+          {%- if relabelConfig.targetLabel %}
+          target_label: "{{ relabelConfig.targetLabel }}"
+          {%- endif %}
+          {%- if relabelConfig.replacement %}
+          replacement: "{{ relabelConfig.replacement }}"
+          {%- endif %}
+      {%- endfor %}
+      {%- endif %}
+
+    {%- endfor %}
+    {%- endif %}
+
+  service:
+    port: {{ prometheus_service_port }}
+
+    {%- if prometheus_service_annotations | bool %}
+    annotations:
+    {%- for key, value in prometheus_service_annotations.items() %}
+      {{ key }}: "{{ value }}"
+    {%- endfor %}
+    {%- endif %}
+
+    {%- if prometheus_service_labels | bool %}
+    labels:
+    {%- for key, value in prometheus_service_labels.items() %}
+      {{ key }}: "{{ value }}"
+    {%- endfor %}
+    {%- endif %}
+
+  ingress:
+    enabled: {{ prometheus_ingress_enabled }}
+
+    {%- if prometheus_ingress_labels | bool %}
+    labels:
+    {%- for key, value in prometheus_ingress_labels.items() %}
+      {{ key }}: "{{ value }}"
+    {%- endfor %}
+    {%- endif %}
+
+    {%- if prometheus_ingress_hosts | length > 0 %}
+    hosts:
+    {%- for host in prometheus_ingress_hosts %}
+      - "{{ host }}"
+    {%- endfor %}
+    {%- endif %}
+
+    {%- if prometheus_ingress_tls_secrets | bool %}
+    tls:
+    {%- for secret in prometheus_ingress_tls_secrets %}
+      - secretName: "{{ secret.name }}"
+        hosts:
+        {%- for host in secret.hosts %}
+          - "{{ host }}"
+        {%- endfor %}
+    {%- endfor %}
+    {%- endif %}
+
+    {%- if prometheus_ingress_paths | length > 0 %}
+    paths:
+    {%- for path in prometheus_ingress_paths %}
+      - path: "{{ path.path }}"
+        backend:
+          serviceName: "{{ path.service }}"
+          servicePort: {{ path.port }}
+    {%- endfor %}
+    {%- endif %}
+
+prometheusOperator:
+  enabled: {{ prometheus_operator_enabled }}
+  prometheusConfigReloader:
+    resources:
+      limits:
+        cpu: "{{ prometheus_configmap_reloader_cpu_limit }}"
+        memory: "{{ prometheus_configmap_reloader_memory_limit }}"
+      requests:
+        cpu: "{{ prometheus_configmap_reloader_cpu_request }}"
+        memory: "{{ prometheus_configmap_reloader_memory_request }}"
+  
+  {%- if ((prometheus_dns_nameservers | length > 0) or 
+         (prometheus_dns_options | length > 0) or 
+         (prometheus_dns_searches | length > 0)) %}
+  dnsConfig:
+
+    {%- if prometheus_dns_nameservers | length > 0 %}
+    nameservers:
+    {%- for nameserver in prometheus_dns_nameservers %}
+      - "{{ nameserver }}"
+    {%- endfor %}
+    {%- endif %}
+
+    {%- if prometheus_dns_options | length > 0 %}
+    options:
+    {%- for option in prometheus_dns_options %}
+      - name: "{{ option.name }}"
+        value: "{{ option.value }}"
+    {%- endfor %}
+    {%- endif %}
+
+    {%- if prometheus_dns_searches | length > 0 %}
+    searches:
+    {%- for search in prometheus_dns_searches %}
+      - "{{ search }}"
+    {%- endfor %}
+    {%- endif %}
+
+  {%- endif %}
+
+alertmanager:
+  enabled: {{ prometheus_alertmanager_enabled }}
+kubeStateMetrics:
+  enabled: {{ prometheus_kube_state_metrics_enabled }}
+  namespaceOverride: "{{ kpa_namespace }}"
+nodeExporter:
+  enabled: {{ prometheus_node_exporter_enabled }}
+prometheusNodeExporter:
+  namespaceOverride: "{{ kpa_namespace }}"
+grafana:
+  enabled: false
