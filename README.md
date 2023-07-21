@@ -1,6 +1,6 @@
 # Kafka+PrometheusAgent (KPA) stack
 
-Custom ansible roles for deploying Prometheus in Agent mode that scrapes
+Custom Ansible roles for deploying Prometheus in Agent mode that scrapes
 metrics from configured targets and sends them to a Kafka topic.
 The [Kafka adapter] is used as a remote write endpoint for Prometheus.
 
