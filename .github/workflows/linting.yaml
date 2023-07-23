@@ -6,7 +6,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-changed-files:
+  lint-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Lint Markdown files
+        uses: docker://avtodev/markdown-lint:v1
+  lint-ansible:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -15,11 +22,33 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - name: Lint Markdown files
-        uses: docker://avtodev/markdown-lint:v1
       - name: Install Kubernetes for Ansible
         run: pip install openshift pyyaml kubernetes 
       - name: Lint all Ansible files
         uses: ansible/ansible-lint@main
         with:
           args: "--config-file=./.github/configs/ansible-lint.yaml $(find ansible/ -type f -name '*.yml' -o -name '*.yaml')"
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Move to the directory with Python files
+        run: cd src/
+      - name: Install Python dependencies
+        run: |
+          pip \
+            install \
+              -r requirements.txt \
+              mypy
+      - name: Lint files with Ruff
+        uses: chartboost/ruff-action@v1
+        with:
+          src: "./src"
+          args: "--config .github/configs/ruff.yaml"
+      - name: Check types with mypy
+        run: mypy --config-file .github/configs/mypy.ini src/
