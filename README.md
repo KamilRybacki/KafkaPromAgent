@@ -38,7 +38,7 @@ after the group name (default is: `kpa`):
 #### Installation settings
 
 * `kpa_target_state` -
-Enable Mentat components (default: `present`)
+Enable KPA components (default: `present`)
 * `kpa_stack_values_files_dir` -
 Directory for saving automatically generated
 values files for the mentat stack
@@ -50,9 +50,9 @@ Path to the `kubeconfig` file for the host
 #### Cluster specific settings
 
 * `kpa_namespace` -
-Namespace to deploy Mentat components to (default: `mentat`)
+Namespace to deploy KPA components to (default: `mentat`)
 * `kpa_cluster_domain` -
-Cluster domain for Mentat components (default: `cluster.local`)
+Cluster domain for KPA components (default: `cluster.local`)
 
 All resources deployed by these playbooks are created
 in the `kpa_namespace` by default namespace for
