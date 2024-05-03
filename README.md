@@ -41,7 +41,7 @@ after the group name (default is: `kpa`):
 Enable KPA components (default: `present`)
 * `kpa_stack_values_files_dir` -
 Directory for saving automatically generated
-values files for the mentat stack
+values files for the stack
 (default: `environments/<env>/values`)
 * `kpa_kubeconfig_path` -
 Path to the `kubeconfig` file for the host
@@ -50,7 +50,7 @@ Path to the `kubeconfig` file for the host
 #### Cluster specific settings
 
 * `kpa_namespace` -
-Namespace to deploy KPA components to (default: `mentat`)
+Namespace to deploy KPA components to (default: `kpa`)
 * `kpa_cluster_domain` -
 Cluster domain for KPA components (default: `cluster.local`)
 
